@@ -30,8 +30,10 @@ void CountFile(string fileName, int *counter) {
 		}
 	}
 //检测：
-	for (int i = 0; i < 26; i++)
-		cout << (char)((int)'a' + i) << " " << counter[i] << endl;
+//	for (int i = 0; i < 26; i++)
+//		cout << (char)((int)'a' + i) << " " << counter[i] << endl;
+
+	ifs.close();
 }
 
 void InitHuffmanTree(huffmanTree& Tree,int *counter) {
@@ -81,14 +83,14 @@ void CreateHuffmanTree(huffmanTree& Tree) {
 	}
 
 //检测：
-	cout << "NUM" << "\t" << "CHAR" << "\t" << "PARENT" << "\t" << "WEIGHT" << "\t" << "LEFT" << "\t" << "RIGHT" << endl;
+//	cout << "NUM" << "\t" << "CHAR" << "\t" << "PARENT" << "\t" << "WEIGHT" << "\t" << "LEFT" << "\t" << "RIGHT" << endl;
 
-	for (int i = 1; i < 52; i++) {
-		cout << i << "\t" << Tree[i].ch << "\t" << Tree[i].parent<<"\t" << Tree[i].weight << "\t" << Tree[i].left << "\t" << Tree[i].right << endl;
-	}
+//	for (int i = 1; i < 52; i++) {
+//		cout << i << "\t" << Tree[i].ch << "\t" << Tree[i].parent<<"\t" << Tree[i].weight << "\t" << Tree[i].left << "\t" << Tree[i].right << endl;
+//	}
 }
 
-void HuffmanTreeCode(huffmanCode& hc, huffmanTree Tree) {
+void HuffmanTreeCode(huffmanCode& hc, huffmanTree Tree,int* length) {
 	hc = (huffmanCode)malloc(sizeof(huffmanCode) * 26 + 1);
 	cout << "HuffmanTreeCode" << endl;
 
@@ -103,7 +105,8 @@ void HuffmanTreeCode(huffmanCode& hc, huffmanTree Tree) {
 			k = Tree[k].parent;
 		}
 		num--;
-
+		cout << i << ":" << num << endl;
+		length[i] = num;
 		hc[i] = (char*)malloc(sizeof(char* )*num);
 		//颠倒
 		for (int k = 0; k <= num; k++) {
@@ -114,9 +117,8 @@ void HuffmanTreeCode(huffmanCode& hc, huffmanTree Tree) {
 	for (int i = 1; i <= 26; i++)
 	{
 		printf("%c:\t", Tree[i].ch);
-		printf("%s\n", hc[i]);
+		printf("%s\t%d\n", hc[i],sizeof(hc[i]));
 	}
-			
 }
 
 void OutFile(string ifileName, string ofileName, huffmanCode hc) {
@@ -134,6 +136,47 @@ void OutFile(string ifileName, string ofileName, huffmanCode hc) {
 			ofs << hc[(int)(ch - 'A') + 1];
 		}
 	}
+
+	ifs.close();
+	ofs.close();
+}
+
+
+bool Is_equal(int j, char* codestr, huffmanCode hc,int* length) {
+	int count = 0;
+	for (int i = 0; i < length[j]; i++) {
+		if (codestr[i] == hc[j][i])
+			count++;
+	}
+	if (count == length[j]) return true;
+	else return false;
+}
+void Encode(string codefileName, string fileName, huffmanCode hc, int* length ) {
+	ifstream ifs;
+	ifs.open(codefileName, ios::in);
+	ofstream ofs;
+	ofs.open(fileName, ios::out);
+	
+	char ch;
+	int i = 0;
+	
+	char codestr[8];
+	while (ifs && ifs.get(ch)) {
+		codestr[i] = ch;
+		i++;
+//		cout << ch;
+		for (int j = 1; j <= 26; j++) {
+			if (Is_equal(j, codestr, hc,length)) {
+				ofs << (char)((int)'a' + j - 1);
+				cout << (char)((int)'a' + j - 1);
+				while (i > 0) {
+					codestr[i] = NULL;
+					i--;
+				}
+				break;
+			}
+		}
+	}
 }
 
 int main() {
@@ -149,6 +192,7 @@ int main() {
 
 	huffmanTree Tree;
 	huffmanCode hc;
+	int length[27];
 
 	//对应字符数存放在数组中，用于初始化哈夫曼树节点
 	InitHuffmanTree(Tree, counter);
@@ -156,36 +200,24 @@ int main() {
 	//构建哈夫曼树
 	CreateHuffmanTree(Tree);
 
-	//形成字符二进制编码，存储到字典中
-	HuffmanTreeCode(hc, Tree);
+	//形成字符二进制编码
+	HuffmanTreeCode(hc, Tree,length);
 
 	//再次遍历文件，将字符映射为对应的二进制编码
-	string outfileName;
-	cout << "enter the name of output-file : ";
-	cin >> outfileName;
-	OutFile(fileName, outfileName, hc);
-
 	//写入文件
-
-
-
-
+	string codefileName;
+	cout << "enter the name of output-file : ";
+	cin >> codefileName;
+	OutFile(fileName, codefileName, hc);
 
 //译码：
 	//读入二进制文件
-
-
-
-
-
+	cout << "enter the name of code-file : ";
+	cin >> codefileName;
 	//遍历文件，将二进制编码转换为字符
-
-
-
-
-
 	//写入文件
-
-
-
+	cout << "enter the name of output-file : ";
+	cin >> fileName;
+	Encode(codefileName, fileName, hc,length);
+	return 0;
 }

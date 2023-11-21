@@ -12,6 +12,7 @@ typedef struct {
 	int weight;
  }huffmanNode,*huffmanTree;
 
+char* p = NULL;
 typedef char** huffmanCode;
 
 void CountFile(string fileName, int *counter) {
@@ -92,7 +93,6 @@ void CreateHuffmanTree(huffmanTree& Tree) {
 
 void HuffmanTreeCode(huffmanCode& hc, huffmanTree Tree,int* length) {
 	hc = (huffmanCode)malloc(sizeof(huffmanCode) * 26 + 1);
-	cout << "HuffmanTreeCode" << endl;
 
 	for (int i = 1; i <=26; i++) {
 		char *code = (char*)malloc(sizeof(char)*26);
@@ -105,7 +105,7 @@ void HuffmanTreeCode(huffmanCode& hc, huffmanTree Tree,int* length) {
 			k = Tree[k].parent;
 		}
 		num--;
-		cout << i << ":" << num << endl;
+	//	cout << i << ":" << num << endl;
 		length[i] = num;
 		hc[i] = (char*)malloc(sizeof(char* )*num);
 		//颠倒
@@ -114,11 +114,13 @@ void HuffmanTreeCode(huffmanCode& hc, huffmanTree Tree,int* length) {
 		}
 		free(code);
 	}
+	/*
 	for (int i = 1; i <= 26; i++)
 	{
 		printf("%c:\t", Tree[i].ch);
-		printf("%s\t%d\n", hc[i],sizeof(hc[i]));
+		printf("%s\n", hc[i]);
 	}
+	*/
 }
 
 void OutFile(string ifileName, string ofileName, huffmanCode hc) {
@@ -161,10 +163,10 @@ void Encode(string codefileName, string fileName, huffmanCode hc, int* length ) 
 	int i = 0;
 	
 	char codestr[8];
+	cout << "result : " << endl;
 	while (ifs && ifs.get(ch)) {
 		codestr[i] = ch;
 		i++;
-//		cout << ch;
 		for (int j = 1; j <= 26; j++) {
 			if (Is_equal(j, codestr, hc,length)) {
 				ofs << (char)((int)'a' + j - 1);
@@ -177,47 +179,67 @@ void Encode(string codefileName, string fileName, huffmanCode hc, int* length ) 
 			}
 		}
 	}
+	cout << endl;
 }
 
 int main() {
-//编码：
-	//读入文件
-	string fileName;
-	cout << "enter the name of input-file : ";
-	cin >> fileName;
-
-	//文件字符统计
-	int counter[26] = {0};
-	CountFile(fileName,counter);
+	int cmd=3;
 
 	huffmanTree Tree;
 	huffmanCode hc;
+	hc = NULL;
 	int length[27];
 
-	//对应字符数存放在数组中，用于初始化哈夫曼树节点
-	InitHuffmanTree(Tree, counter);
-
-	//构建哈夫曼树
-	CreateHuffmanTree(Tree);
-
-	//形成字符二进制编码
-	HuffmanTreeCode(hc, Tree,length);
-
-	//再次遍历文件，将字符映射为对应的二进制编码
-	//写入文件
+	string fileName;
 	string codefileName;
-	cout << "enter the name of output-file : ";
-	cin >> codefileName;
-	OutFile(fileName, codefileName, hc);
 
-//译码：
-	//读入二进制文件
-	cout << "enter the name of code-file : ";
-	cin >> codefileName;
-	//遍历文件，将二进制编码转换为字符
-	//写入文件
-	cout << "enter the name of output-file : ";
-	cin >> fileName;
-	Encode(codefileName, fileName, hc,length);
-	return 0;
+	cout << "——————————————————————  HUFFMAN   CODE  ——————————————————————" << endl;
+	while (cmd != 0) {
+		cout << "please enter the command (0 ~exit , 1 ~code , 2~decode ) :";
+		cin >> cmd;
+		switch (cmd) {
+		case 0: exit(0); break;
+		case 1: {
+			//编码：
+				//读入文件
+			cout << "enter the name of input-file : ";
+			cin >> fileName;
+
+			//文件字符统计
+			int counter[26] = { 0 };
+			CountFile(fileName, counter);
+
+			//对应字符数存放在数组中，用于初始化哈夫曼树节点
+			InitHuffmanTree(Tree, counter);
+
+			//构建哈夫曼树
+			CreateHuffmanTree(Tree);
+
+			//形成字符二进制编码
+			HuffmanTreeCode(hc, Tree, length);
+
+			//再次遍历文件，将字符映射为对应的二进制编码
+			//写入文件
+
+			cout << "enter the name of output-file : ";
+			cin >> codefileName;
+			OutFile(fileName, codefileName, hc);
+			cout << "#SUCCEED" << endl;
+		}; break;
+		case 2: {
+			//译码：
+				//读入二进制文件
+			cout << "enter the name of code-file : ";
+			cin >> codefileName;
+
+			//遍历文件，将二进制编码转换为字符
+			//写入文件
+			cout << "enter the name of output-file : ";
+			cin >> fileName;
+			Encode(codefileName, fileName, hc, length);
+			cout << "#FINISHED" << endl;
+		}break;
+		default:cout << "#Wrong Commend" << endl; break;
+		}
+	}
 }

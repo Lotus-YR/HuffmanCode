@@ -139,10 +139,43 @@ void OutFile(string ifileName, string ofileName, huffmanCode hc) {
 		}
 	}
 
-	ifs.close();
 	ofs.close();
-}
 
+	int charnum = 0;
+	unsigned char c = 00000000;
+
+	ifstream ifs2;
+	ifs2.open(ofileName, ios::in);
+	ofstream ofs2;
+	ofs2.open("comfile.txt", ios::out);
+
+	char ch2;
+	while (ifs2 && ifs2.get(ch2)) {
+		charnum++;
+
+		if (ch2 == '0')
+			c << 1;
+		else if (ch2 == '1') {
+			c << 1;
+			c = c | 1;
+		}
+
+		if (charnum%8 == 0) {
+			ofs2 << c;
+			c = 00000000;
+		}
+	}
+	
+	while (charnum % 8 != 0) {
+		c << 1;
+		charnum++;
+	}
+	ofs2 << c;
+
+	ifs.close();
+	ifs2.close();
+	ofs2.close();
+}
 
 bool Is_equal(int j, char* codestr, huffmanCode hc,int* length) {
 	int count = 0;
@@ -162,7 +195,7 @@ void Encode(string codefileName, string fileName, huffmanCode hc, int* length ) 
 	char ch;
 	int i = 0;
 	
-	char codestr[8];
+char codestr[8];
 	cout << "result : " << endl;
 	while (ifs && ifs.get(ch)) {
 		codestr[i] = ch;
